@@ -1,6 +1,4 @@
-# Default values for python.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Default values for Flaskr deployments
 replicaCount: 1
 image:
   pullPolicy: IfNotPresent

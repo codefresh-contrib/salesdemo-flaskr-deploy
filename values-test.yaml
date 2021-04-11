@@ -1,0 +1,12 @@
+# Values for deploying to the Test environment
+# Increased resource limits compared to default values.yaml 
+replicaCount: 1
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+ingress:
+  enabled: false
