@@ -1,0 +1,12 @@
+# Values for deploying to the QA environment
+# Increased resource requests+limits compared to Test 
+replicaCount: 1
+resources:
+  limits:
+    cpu: 400m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+ingress:
+  enabled: false

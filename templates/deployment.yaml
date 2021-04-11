@@ -14,13 +14,11 @@ spec:
   template:
     metadata:
       annotations:
-        buildID: {{ .Values.buildID }}
+        buildID: "{{ .Values.buildID }}"
       labels:
         draft: {{ default "draft-app" .Values.draft }}
         app: {{ template "fullname" . }}
     spec:
-      imagePullSecrets:
-        - name: {{ .Values.image.pullSecret }}      
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

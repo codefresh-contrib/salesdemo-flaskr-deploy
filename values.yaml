@@ -1,11 +1,9 @@
-# Default values for python.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Default values for Flaskr deployments
 replicaCount: 1
 image:
   pullPolicy: IfNotPresent
   repository: 336151728602.dkr.ecr.us-west-2.amazonaws.com/flaskr
-  tag: latest
+  tag: main-c865bef
 service:
   name: flaskr
   type: LoadBalancer
