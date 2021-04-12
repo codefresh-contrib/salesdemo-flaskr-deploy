@@ -5,16 +5,16 @@ metadata:
   description: Test environment of the Flaskr application
   namespace: flaskr-test
   finalizers:
-  - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     namespace: flaskr-test
     name: in-cluster
   project: default
   source:
-    path: ./argocd/test
     repoURL: https://github.com/codefresh-contrib/salesdemo-flaskr-deploy.git
     targetRevision: env-test
+    path: .
     helm:
       parameters:
         - name: buildID
