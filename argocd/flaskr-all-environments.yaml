@@ -1,17 +1,17 @@
-
+# Parent Argo CD app (grouping) for the flaskr apps
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: flaskr-all-environments
   namespace: argocd
   finalizers:
-  - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     namespace: argocd
     name: in-cluster
   project: default
   source:
-    path: ./argocd
+    path: ./argocd/apps  # Directory that contains the child apps
     repoURL: https://github.com/codefresh-contrib/salesdemo-flaskr-deploy.git
     targetRevision: main
