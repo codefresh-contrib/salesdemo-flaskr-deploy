@@ -2,7 +2,6 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: flaskr-test
-  description: Test environment of the Flaskr application
   namespace: flaskr-test
   finalizers:
     - resources-finalizer.argocd.argoproj.io
