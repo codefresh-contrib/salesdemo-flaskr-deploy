@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flaskr-qa
+  namespace: argocd  # All app resources live in the argocd namespace
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: flaskr-qa
+    name: in-cluster
+  project: flaskr
+  source:
+    repoURL: https://github.com/codefresh-contrib/salesdemo-flaskr-deploy.git
+    targetRevision: env-qa
+    path: .
+    helm:
+      parameters:
+        - name: buildID
+          value: argocd
+      valueFiles:
+        - values.yaml
+        - values-qa.yaml
