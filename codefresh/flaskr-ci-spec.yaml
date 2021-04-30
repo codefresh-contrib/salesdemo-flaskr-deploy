@@ -19,7 +19,7 @@ spec:
       branchRegex: /main/gi
       branchRegexInput: regex
       provider: github
-      disabled: false
+      # disabled: false  # don't override current state
       options:
         noCache: false
         noCfCache: false

@@ -20,7 +20,7 @@ spec:
       branchRegexInput: multiselect
       modifiedFilesGlob: helm/**
       provider: github
-      disabled: false
+      # disabled: false  # don't override current state
       options:
         noCache: false
         noCfCache: false
@@ -41,7 +41,7 @@ spec:
       branchRegexInput: multiselect
       modifiedFilesGlob: codefresh/*spec*.yaml
       provider: github
-      disabled: false
+      # disabled: false  # don't override current state
       options:
         noCache: false
         noCfCache: false
@@ -62,7 +62,7 @@ spec:
       branchRegexInput: multiselect
       modifiedFilesGlob: argocd/flaskr-all-environments.yaml
       provider: github
-      disabled: false
+      # disabled: false  # don't override current state
       options:
         noCache: false
         noCfCache: false
