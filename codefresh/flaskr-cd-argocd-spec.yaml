@@ -1,0 +1,100 @@
+version: '1.0'
+kind: pipeline
+metadata:
+  name: Flaskr/Flaskr CD - Argo CD pipeline
+  project: Flaskr
+  deprecate: {}
+  labels:
+    tags: []
+  originalYamlString: 
+spec:
+  triggers:
+    - name: DeployToProd
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((main)$).*/gi
+      branchRegexInput: multiselect
+      provider: github
+      disabled: false
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-temp
+      contexts: []
+      variables:
+        - key: ARGOCD_AGENT
+          value: sa-eks-argocd
+        - key: ARGOCD_APP_NAME
+          value: flaskr-prod
+    - name: DeployToQA
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((env-qa)$).*/gi
+      branchRegexInput: multiselect
+      provider: github
+      disabled: false
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-temp
+      contexts: []
+      variables:
+        - key: ARGOCD_AGENT
+          value: sa-eks-argocd
+        - key: ARGOCD_APP_NAME
+          value: flaskr-test
+    - name: DeployToTest
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((env-test)$).*/gi
+      branchRegexInput: multiselect
+      provider: github
+      disabled: true
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-temp
+      contexts: []
+      variables:
+        - key: ARGOCD_APP_NAME
+          value: flaskr-test
+        - key: ARGOCD_AGENT
+          value: sa-eks-argocd
+  variables:
+    - key: ARGOCD_APP_NAME
+      value: flaskr-test
+      encrypted: false
+    - key: ARGOCD_AGENT
+      value: sa-eks-argocd
+      encrypted: false
+  contexts: []
+  runtimeEnvironment:
+    name: salesdemo-eks
+    cpu: 1000m
+    memory: 2048Mi
+    dindStorage: nullGi
+  terminationPolicy: []
+  externalResources: []
+  specTemplate:
+    location: git
+    repo: codefresh-contrib/salesdemo-flaskr-deploy
+    path: ./codefresh/flaskr-cd-argocd-steps.yaml
+    revision: main
+    context: github-temp
+  steps: {}
+  stages: []

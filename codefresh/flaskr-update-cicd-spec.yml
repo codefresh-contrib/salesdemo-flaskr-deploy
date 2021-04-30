@@ -1,0 +1,102 @@
+version: '1.0'
+kind: pipeline
+metadata:
+  name: Flaskr/Flaskr - Update CI-CD
+  project: Flaskr
+  deprecate: {}
+  labels:
+    tags: []
+  originalYamlString: ""
+spec:
+  triggers:
+    - name: HelmCharts
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((main)$).*/gi
+      branchRegexInput: multiselect
+      modifiedFilesGlob: helm/**
+      provider: github
+      disabled: false
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-ted
+      contexts: []
+      variables:
+        - key: HELM_CHANGED
+          value: 'true'
+    - name: Pipelines
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((main)$).*/gi
+      branchRegexInput: multiselect
+      modifiedFilesGlob: codefresh/*spec*.yaml
+      provider: github
+      disabled: false
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-ted
+      contexts: []
+      variables:
+        - key: PIPELINE_CHANGED
+          value: 'true'
+    - name: ArgoCDParentApp
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((main)$).*/gi
+      branchRegexInput: multiselect
+      modifiedFilesGlob: argocd/flaskr-all-environments.yaml
+      provider: github
+      disabled: false
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      verified: true
+      context: github-ted
+      contexts: []
+      variables:
+        - key: ARGOCD_PARENT_CHANGED
+          value: 'true'
+  stages: []
+  variables:
+    - key: GIT_PROVIDER_NAME
+      value: github-ted
+      encrypted: false
+    - key: HELM_VER
+      value: 3.3.1
+      encrypted: false
+    - key: KUBE_CTX
+      value: codefresh-pipelines@salesdemo-eks
+      encrypted: false
+  contexts:
+    - CF_HELM_DEFAULT
+  runtimeEnvironment:
+    name: salesdemo-eks
+    cpu: 1000m
+    memory: 2048Mi
+    dindStorage: nullGi
+  terminationPolicy: []
+  externalResources: []
+  specTemplate:
+    location: git
+    repo: codefresh-contrib/salesdemo-flaskr-deploy
+    path: ./codefresh/flaskr-update-cicd-steps.yaml
+    revision: main
+    context: github-temp
+  steps: {}

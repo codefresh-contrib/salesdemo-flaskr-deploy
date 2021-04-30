@@ -1,0 +1,77 @@
+version: '1.0'
+kind: pipeline
+metadata:
+  name: Flaskr/Flaskr CI
+  project: Flaskr
+  deprecate: {}
+  labels:
+    tags: []
+  originalYamlString: ""
+spec:
+  triggers:
+    - name: FlaskrApp
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /main/gi
+      branchRegexInput: regex
+      provider: github
+      disabled: false
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-temp
+      contexts: []
+      variables: []
+  variables:
+    - key: TEST_BUCKET_NAME
+      value: flaskr
+      encrypted: false
+    - key: TEST_STORAGE_NAME
+      value: amazon-s3
+      encrypted: false
+    - key: IMAGE_NAME
+      value: flaskr
+      encrypted: false
+    - key: REGISTRY_NAME
+      value: ecr
+      encrypted: false
+    - key: RESIGTRY_FQDN
+      value: 336151728602.dkr.ecr.us-west-2.amazonaws.com
+      encrypted: false
+    - key: GIT_PROVIDER_NAME
+      value: github-temp
+      encrypted: false
+    - key: DEPLOY_REPO_OWNER
+      value: codefresh-contrib
+      encrypted: false
+    - key: DEPLOY_REPO_NAME
+      value: salesdemo-flaskr-deploy
+      encrypted: false
+    - key: DEPLOY_REPO_BRANCH
+      value: env-test
+      encrypted: false
+    - key: CHART_NAME
+      value: flaskr
+      encrypted: false
+  contexts:
+    - CF_HELM_DEFAULT
+  runtimeEnvironment:
+    name: salesdemo-eks
+    cpu: 2000m
+    memory: 4096Mi
+    dindStorage: nullGi
+  terminationPolicy: []
+  externalResources: []
+  specTemplate:
+    location: git
+    repo: codefresh-contrib/salesdemo-flaskr-deploy
+    path: ./codefresh/flaskr-ci-steps.yaml
+    revision: main
+    context: github-temp
+  steps: {}
+  stages: []

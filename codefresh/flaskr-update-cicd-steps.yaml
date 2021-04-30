@@ -1,0 +1,70 @@
+# Apply CI/CD-as-code changes in salesdemo-flaskr-deploy
+
+version: "1.0"
+stages:
+  - clone
+  - codefresh
+  - argo cd
+  - helm
+
+steps:
+
+  main_clone:
+    title: Clone main repository
+    stage: clone
+    type: git-clone
+    git: '${{GIT_PROVIDER_NAME}}'
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_REVISION}}'
+
+  update_pipelines:
+    title: Apply updated pipeline spec YAML
+    stage: codefresh
+    type: pipeline-trigger-merge
+    scale:
+      flaskr_ci:
+        arguments:
+          SPEC: codefresh/flaskr-ci-spec.yaml
+      flaskr_cd_helm:
+        arguments:
+          SPEC: codefresh/flaskr-cd-helm-spec.yaml
+      flaskr_cd_argocd:
+        arguments:
+          SPEC: codefresh/flaskr-cd-argocd-spec.yaml
+    when:
+      condition:
+        all:
+          pipeline_changed: 'includes("${{PIPELINE_CHANGED}}", "{{PIPELINE_CHANGED}}") == false'
+
+  update_argo_cd_parent_app:
+  # For app-of-apps pattern, only apply changes to the parent app. Child app changes
+  # will be picked up whenever Argo CD sync's the parent app.
+    title: Apply updated Argo CD parent YAML
+    stage: argo cd
+    image: codefresh/cf-argo-plugin:0.2.1
+    commands:
+      - argocd app create --upset -f argocd/flaskr-all-environments.yaml
+    when:
+      condition:
+        all:
+          parent_changed: 'includes("${{ARGOCD_PARENT_CHANGED}}", "{{ARGOCD_PARENT_CHANGED}}") == false'
+
+  push_helm_charts:
+    # Storing charts in a Helm repo lets users install them to a Helm Board, 
+    # as well as to their personal test clusters
+    title: Push charts to Helm Repo
+    stage: helm
+    type: helm
+    working_directory: '${{main_clone}}/helm'
+    arguments:
+      action: push
+      chart_repo_url: '${{CF_CTX_CF_HELM_DEFAULT_URL}}'
+    scale:
+      flaskr:
+        arguments:
+          chart_name: flaskr
+    when:
+      condition:
+        all:
+          helm_changed: 'includes("${{HELM_CHANGED}}", "{{HELM_CHANGED}}") == false'
+  
