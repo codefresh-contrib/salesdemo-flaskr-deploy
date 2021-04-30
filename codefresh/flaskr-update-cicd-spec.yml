@@ -81,7 +81,7 @@ spec:
       value: 3.3.1
       encrypted: false
     - key: KUBE_CTX
-      value: codefresh-pipelines@salesdemo-eks
+      value: salesdemo-eks
       encrypted: false
   contexts:
     - CF_HELM_DEFAULT

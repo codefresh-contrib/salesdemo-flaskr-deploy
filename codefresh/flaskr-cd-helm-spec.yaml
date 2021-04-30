@@ -32,7 +32,7 @@ spec:
         - key: CHART_RELEASE
           value: flaskr-prod
         - key: DEPLOY_KUBE_CTX
-          value: codefresh-pipelines@salesdemo-eks
+          value: salesdemo-eks
         - key: DEPLOY_KUBE_NS
           value: flaskr-prod
         - key: ENV_HELM_VALUES
@@ -66,7 +66,7 @@ spec:
         - key: CHART_RELEASE
           value: flaskr-qa
         - key: DEPLOY_KUBE_CTX
-          value: codefresh-pipelines@salesdemo-eks
+          value: salesdemo-eks
         - key: DEPLOY_KUBE_NS
           value: flaskr-qa
         - key: ENV_HELM_VALUES
@@ -100,7 +100,7 @@ spec:
         - key: CHART_RELEASE
           value: flaskr-test
         - key: DEPLOY_KUBE_CTX
-          value: codefresh-pipelines@salesdemo-eks
+          value: salesdemo-eks
         - key: DEPLOY_KUBE_NS
           value: flaskr-test
         - key: ENV_HELM_VALUES
