@@ -67,7 +67,6 @@ spec:
         noCache: false
         noCfCache: false
         resetVolume: false
-      verified: true
       context: github-ted
       contexts: []
       variables:
@@ -98,5 +97,5 @@ spec:
     repo: codefresh-contrib/salesdemo-flaskr-deploy
     path: ./codefresh/flaskr-update-cicd-steps.yaml
     revision: main
-    context: github-temp
+    context: github-ted
   steps: {}
