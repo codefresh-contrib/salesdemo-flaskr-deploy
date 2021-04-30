@@ -24,7 +24,7 @@ spec:
         noCache: false
         noCfCache: false
         resetVolume: false
-      context: github-temp
+      context: github-ted
       contexts: []
       variables:
         - key: ARGOCD_AGENT
@@ -46,7 +46,7 @@ spec:
         noCache: false
         noCfCache: false
         resetVolume: false
-      context: github-temp
+      context: github-ted
       contexts: []
       variables:
         - key: ARGOCD_AGENT
@@ -68,7 +68,7 @@ spec:
         noCache: false
         noCfCache: false
         resetVolume: false
-      context: github-temp
+      context: github-ted
       contexts: []
       variables:
         - key: ARGOCD_APP_NAME
@@ -95,6 +95,6 @@ spec:
     repo: codefresh-contrib/salesdemo-flaskr-deploy
     path: ./codefresh/flaskr-cd-argocd-steps.yaml
     revision: main
-    context: github-temp
+    context: github-ted
   steps: {}
   stages: []

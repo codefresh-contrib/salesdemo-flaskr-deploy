@@ -24,11 +24,11 @@ spec:
         noCache: false
         noCfCache: false
         resetVolume: false
-      context: github-temp
+      context: github-ted
       contexts: []
       variables:
         - key: GIT_PROVIDER_NAME
-          value: github-temp
+          value: github-ted
         - key: CHART_RELEASE
           value: flaskr-prod
         - key: DEPLOY_KUBE_CTX
@@ -58,11 +58,11 @@ spec:
         noCache: false
         noCfCache: false
         resetVolume: false
-      context: github-temp
+      context: github-ted
       contexts: []
       variables:
         - key: GIT_PROVIDER_NAME
-          value: github-temp
+          value: github-ted
         - key: CHART_RELEASE
           value: flaskr-qa
         - key: DEPLOY_KUBE_CTX
@@ -92,11 +92,11 @@ spec:
         noCache: false
         noCfCache: false
         resetVolume: false
-      context: github-temp
+      context: github-ted
       contexts: []
       variables:
         - key: GIT_PROVIDER_NAME
-          value: github-temp
+          value: github-ted
         - key: CHART_RELEASE
           value: flaskr-test
         - key: DEPLOY_KUBE_CTX
@@ -128,6 +128,6 @@ spec:
     repo: codefresh-contrib/salesdemo-flaskr-deploy
     path: ./codefresh/flaskr-cd-helm-steps.yaml
     revision: main
-    context: github-temp
+    context: github-ted
   steps: {}
   stages: []
