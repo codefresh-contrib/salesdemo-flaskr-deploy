@@ -85,6 +85,8 @@ spec:
       encrypted: false
   contexts:
     - CF_HELM_DEFAULT
+    - Argo CD
+    - Argo CD creds
   runtimeEnvironment:
     name: salesdemo-eks
     cpu: 1000m

@@ -45,7 +45,8 @@ steps:
     working_directory: '${{main_clone}}/argocd'
     image: codefresh/cf-argo-plugin:0.2.1
     commands:
-      - argocd app create --upset -f flaskr-all-environments.yaml
+      - 'argocd login ${{ARGOCD_FQDN}} ${{ARGOCD_LOGIN_PARAMS}} --username ${{ARGOCD_USER}} --password ${{ARGOCD_PASS}}'
+      - 'argocd app create --upset -f flaskr-all-environments.yaml'  # --upset allows updating an existing app
     when:
       condition:
         all:
