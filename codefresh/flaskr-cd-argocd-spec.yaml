@@ -18,6 +18,7 @@ spec:
       commentRegex: /.*/gi
       branchRegex: /^((main)$).*/gi
       branchRegexInput: multiselect
+      modifiedFilesGlob: helm/**
       provider: github
       # disabled: false  # don't override current state
       options:
@@ -40,6 +41,7 @@ spec:
       commentRegex: /.*/gi
       branchRegex: /^((env-qa)$).*/gi
       branchRegexInput: multiselect
+      modifiedFilesGlob: helm/**
       provider: github
       # disabled: false  # don't override current state
       options:
@@ -62,6 +64,7 @@ spec:
       commentRegex: /.*/gi
       branchRegex: /^((env-test)$).*/gi
       branchRegexInput: multiselect
+      modifiedFilesGlob: helm/**
       provider: github
       # disabled: false  # don't override current state
       options:
