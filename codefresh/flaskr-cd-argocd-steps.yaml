@@ -1,0 +1,18 @@
+version: "1.0"
+stages:
+  - "sync"
+  - "test"
+
+steps:
+
+  sync_and_wait:
+    title: Sync ArgoCD app and wait
+    stage: sync
+    type: argocd-sync
+    arguments:
+      context: '${{ARGOCD_AGENT}}'  # Name of the agent in Codefresh, Integrations->GitOps
+      app_name: '${{ARGOCD_APP_NAME}}'
+      wait_healthy: true
+      debug: true
+      additional_flags:
+        - '--grpc-web'  # Needed when Argo CD runs behind a svc

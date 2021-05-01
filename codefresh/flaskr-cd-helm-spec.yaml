@@ -1,0 +1,133 @@
+version: '1.0'
+kind: pipeline
+metadata:
+  name: Flaskr/Flaskr CD - Helm pipeline
+  project: Flaskr
+  deprecate: {}
+  labels:
+    tags: []
+  originalYamlString: ""
+spec:
+  triggers:
+    - name: DeployToProd
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((main)$).*/gi
+      branchRegexInput: multiselect
+      provider: github
+      # disabled: false  # don't override current state
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-ted
+      contexts: []
+      variables:
+        - key: GIT_PROVIDER_NAME
+          value: github-ted
+        - key: CHART_RELEASE
+          value: flaskr-prod
+        - key: DEPLOY_KUBE_CTX
+          value: salesdemo-eks
+        - key: DEPLOY_KUBE_NS
+          value: flaskr-prod
+        - key: ENV_HELM_VALUES
+          value: values-prod.yaml
+        - key: CHART_NAME
+          value: flaskr
+        - key: ENV_DASHBOARD_NAME
+          value: Flaskr-Prod
+        - key: ENV_DASHBOARD_SVC
+          value: flaskr-prod-flaskr
+    - name: DeployToQA
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((env-qa)$).*/gi
+      branchRegexInput: multiselect
+      provider: github
+      # disabled: false  # don't override current state
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-ted
+      contexts: []
+      variables:
+        - key: GIT_PROVIDER_NAME
+          value: github-ted
+        - key: CHART_RELEASE
+          value: flaskr-qa
+        - key: DEPLOY_KUBE_CTX
+          value: salesdemo-eks
+        - key: DEPLOY_KUBE_NS
+          value: flaskr-qa
+        - key: ENV_HELM_VALUES
+          value: values-qa.yaml
+        - key: CHART_NAME
+          value: flaskr
+        - key: ENV_DASHBOARD_NAME
+          value: Flaskr-QA
+        - key: ENV_DASHBOARD_SVC
+          value: flaskr-qa-flaskr
+    - name: DeployToTest
+      type: git
+      repo: codefresh-contrib/salesdemo-flaskr-deploy
+      events:
+        - push.heads
+      pullRequestAllowForkEvents: false
+      commentRegex: /.*/gi
+      branchRegex: /^((env-test)$).*/gi
+      branchRegexInput: multiselect
+      provider: github
+      # disabled: false  # don't override current state
+      options:
+        noCache: false
+        noCfCache: false
+        resetVolume: false
+      context: github-ted
+      contexts: []
+      variables:
+        - key: GIT_PROVIDER_NAME
+          value: github-ted
+        - key: CHART_RELEASE
+          value: flaskr-test
+        - key: DEPLOY_KUBE_CTX
+          value: salesdemo-eks
+        - key: DEPLOY_KUBE_NS
+          value: flaskr-test
+        - key: ENV_HELM_VALUES
+          value: values-test.yaml
+        - key: CHART_NAME
+          value: flaskr
+        - key: ENV_DASHBOARD_NAME
+          value: Flaskr-Test
+        - key: ENV_DASHBOARD_SVC
+          value: flaskr-test-flaskr
+  variables:
+    - key: HELM_VER
+      value: 3.3.1
+      encrypted: false
+  contexts: []
+  runtimeEnvironment:
+    name: salesdemo-eks
+    cpu: 2000m
+    memory: 4096Mi
+    dindStorage: nullGi
+  terminationPolicy: []
+  externalResources: []
+  specTemplate:
+    location: git
+    repo: codefresh-contrib/salesdemo-flaskr-deploy
+    path: ./codefresh/flaskr-cd-helm-steps.yaml
+    revision: main
+    context: github-ted
+  steps: {}
+  stages: []
