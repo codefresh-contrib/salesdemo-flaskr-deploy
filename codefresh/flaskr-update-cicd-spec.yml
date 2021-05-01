@@ -16,7 +16,7 @@ spec:
         - push.heads
       pullRequestAllowForkEvents: false
       commentRegex: /.*/gi
-      branchRegex: /^((main)$).*/gi
+      branchRegex: /^((env-test)$).*/gi
       branchRegexInput: multiselect
       modifiedFilesGlob: helm/**
       provider: github

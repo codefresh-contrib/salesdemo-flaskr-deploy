@@ -58,8 +58,7 @@ spec:
     - key: CHART_NAME
       value: flaskr
       encrypted: false
-  contexts:
-    - CF_HELM_DEFAULT
+  contexts: []
   runtimeEnvironment:
     name: salesdemo-eks
     cpu: 2000m
