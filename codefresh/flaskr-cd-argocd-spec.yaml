@@ -60,7 +60,7 @@ spec:
         - key: ARGOCD_AGENT
           value: argocd
         - key: ARGOCD_APP_NAME
-          value: flaskr-test
+          value: flaskr-qa
         - key: TEST_KUBE_CTX
           value: salesdemo-eks
         - key: TEST_KUBE_NS
