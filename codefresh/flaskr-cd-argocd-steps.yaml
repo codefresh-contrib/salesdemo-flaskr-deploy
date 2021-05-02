@@ -40,7 +40,7 @@ steps:
 
   notify_slack_finished:
     title: Post-sync Slack notification
-    stage: prep
+    stage: test
     type: slack-notifier
     arguments:
       SLACK_HOOK_URL: '${{SLACK_WEBHOOK_URL}}'

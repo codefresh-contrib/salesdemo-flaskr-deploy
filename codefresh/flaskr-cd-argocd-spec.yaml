@@ -29,7 +29,7 @@ spec:
       contexts: []
       variables:
         - key: ARGOCD_AGENT
-          value: sa-eks-argocd
+          value: argocd
         - key: ARGOCD_APP_NAME
           value: flaskr-prod
         - key: TEST_KUBE_CTX
@@ -58,7 +58,7 @@ spec:
       contexts: []
       variables:
         - key: ARGOCD_AGENT
-          value: sa-eks-argocd
+          value: argocd
         - key: ARGOCD_APP_NAME
           value: flaskr-test
         - key: TEST_KUBE_CTX
@@ -89,7 +89,7 @@ spec:
         - key: ARGOCD_APP_NAME
           value: flaskr-test
         - key: ARGOCD_AGENT
-          value: sa-eks-argocd
+          value: argocd
         - key: TEST_KUBE_CTX
           value: salesdemo-eks
         - key: TEST_KUBE_NS
@@ -97,12 +97,8 @@ spec:
         - key: TEST_RELEASE
           value: flaskr-test
   variables:
-    - key: ARGOCD_APP_NAME
-      value: flaskr-test
-      encrypted: false
-    - key: ARGOCD_AGENT
-      value: sa-eks-argocd
-      encrypted: false
+    - key: SLACK_HOOK_URL
+      value: "https://hooks.slack.com/services/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"
   contexts: []
   runtimeEnvironment:
     name: salesdemo-eks
