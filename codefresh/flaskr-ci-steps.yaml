@@ -1,0 +1,158 @@
+version: '1.0'
+stages:
+  - build
+  - test
+  - push
+  - update helm
+
+steps:
+
+  main_clone:
+    title: Clone app repository
+    stage: build
+    type: git-clone
+    git: '${{GIT_PROVIDER_NAME}}'
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_REVISION}}'
+
+  build_docker_image:
+    title: Build Docker Image
+    stage: build
+    type: build
+    image_name: '${{IMAGE_NAME}}'
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
+    dockerfile: Dockerfile
+    disable_push: true
+
+  parallel_tests:
+    type: parallel
+    stage: test
+    fail_fast: false  # Process failures after test report is uploaded
+    steps:
+      linting:
+        title: Run Linting Tests (ignore)
+        image: '${{build_docker_image}}'
+        fail_fast: false
+        commands:
+          - pip install pytest-pylint
+          - pytest --pylint
+      unit_tests:
+        title: Run Unit tests
+        image: '${{build_docker_image}}'
+        commands:
+          - pip install pytest allure-pytest
+          - mkdir -p $CF_VOLUME_PATH/allure-results
+          - pytest --alluredir=$CF_VOLUME_PATH/allure-results
+
+  upload_report:
+    title: Upload Allure Unit Test Report
+    stage: test
+    type: test-reporting
+    fail_fast: true
+    working_directory: '${{CF_VOLUME_PATH}}/'
+    arguments:
+      allure_dir: allure-results
+      bucket_name: '${{TEST_BUCKET_NAME}}'
+      storage_integration: '${{TEST_STORAGE_NAME}}'
+      branch: '${{CF_BRANCH_TAG_NORMALIZED}}'
+      clear_test_report: true
+
+  check_for_test_failures:
+    title: Check test results for failures
+    stage: test
+    image: alpine
+    commands:
+      - 'echo Result of Linting was: ${{steps.linting.result}}'
+      - 'echo Result of Unit Testing was: ${{steps.unit_tests.result}}'
+      - 'exit 1'
+    when:
+      steps:
+        any:
+#           - name: linting  # Let's give the devs some time to fix all their linting errors
+#             on:
+#               - failure
+          - name: unit_tests
+            on:
+              - failure
+
+  push_docker_image:
+    title: Push image to Docker Registry
+    stage: push
+    type: push
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
+    candidate: '${{build_docker_image}}'
+    image_name: '${{IMAGE_NAME}}'
+    registry: '${{REGISTRY_NAME}}'
+
+  prep_for_enrich_image:
+    title: Gather image info
+    stage: push
+    image: alpine
+    commands:
+      - echo "${{steps.push_docker_image.imageId}}"
+      - export IMAGE=${{steps.push_docker_image.imageId}}
+      - cf_export IMAGE
+      - echo $IMAGE
+
+  enrich_image:
+    title: Enrich image with PR annotations
+    stage: push
+    type: image-enricher
+    arguments:
+      IMAGE: '${{IMAGE}}'
+      BRANCH: '${{CF_BRANCH}}'
+      REPO: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+      GIT_PROVIDER_NAME: '${{GIT_PROVIDER_NAME}}'  # defined as a trigger variable
+    hooks:
+      on_fail:
+        metadata:
+          set:
+            - '${{steps.push_docker_image.imageId}}':
+              - CF_QUALITY: false
+
+  # When updating a repo, you should clean the directory of dirty files from past builds
+  get_committer_email:
+    title: Get email of committer
+    stage: update helm
+    image: alpine/git:latest
+    commands:
+      - cf_export COMMIT_AUTHOR_EMAIL=$(git show -s --format='%ae' ${{CF_SHORT_REVISION}})
+
+  pre_clean:
+    title: Pre-clean the clone directory
+    stage: update helm
+    image: alpine/git:latest
+    commands:
+      - rm -rf ${{CF_VOLUME_PATH}}/${{DEPLOY_REPO_NAME}}
+
+  clone_deploy_repo:
+    title: Clone GitOps deploy repository
+    stage: update helm
+    type: git-clone
+    git: '${{GIT_PROVIDER_NAME}}'
+    repo: '${{DEPLOY_REPO_OWNER}}/${{DEPLOY_REPO_NAME}}'
+    revision: '${{DEPLOY_REPO_BRANCH}}'
+
+  update_helm_chart_value:
+    # values.yaml is a proper yaml file and can be easily updated; helm templates aren't
+    title: 'Update chart: image, appVersion'
+    stage: update helm
+    working_directory: '${{clone_deploy_repo}}/helm/${{CHART_NAME}}'
+    image: mikefarah/yq:4.6.3  # Official yq image
+    commands:
+      - yq e '.image.repository = "${{RESIGTRY_FQDN}}/${{IMAGE_NAME}}"' -i values.yaml
+      - yq e '.image.tag = "${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}"' -i values.yaml
+      - yq e '.appVersion = "${{CF_SHORT_REVISION}}"' -i Chart.yaml
+
+  commit_and_push:
+    title: Commit changes and push
+    stage: update helm
+    type: git-commit
+    arguments:
+      repo: '${{DEPLOY_REPO_OWNER}}/${{DEPLOY_REPO_NAME}}'
+      working_directory: '${{CF_VOLUME_PATH}}/${{DEPLOY_REPO_NAME}}'
+      git: ${{GIT_PROVIDER_NAME}}
+      commit_message: "Update image ${{IMAGE_NAME}}:${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}"
+      git_user_name: '${{CF_COMMIT_AUTHOR}'
+      git_user_email: '${{COMMIT_AUTHOR_EMAIL}}'
+      allow_empty: false

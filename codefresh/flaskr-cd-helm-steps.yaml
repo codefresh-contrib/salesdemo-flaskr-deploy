@@ -1,0 +1,72 @@
+version: '1.0'
+stages:
+  - clone
+  - deploy
+  - test
+  - monitor
+
+steps:
+
+  main_clone:
+    title: Clone main repository
+    stage: clone
+    type: git-clone
+    git: '${{GIT_PROVIDER_NAME}}'
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_REVISION}}'
+
+  deploy_helm_release:
+    title: Deploy Helm Chart
+    stage: deploy
+    type: helm
+    working_directory: '${{main_clone}}/helm'
+    arguments:
+      action: install
+      helm_version: '${{HELM_VER}}'
+      chart_name: '${{CHART_NAME}}'
+      release_name: '${{CHART_RELEASE}}'
+      kube_context: '${{DEPLOY_KUBE_CTX}}'
+      namespace: '${{DEPLOY_KUBE_NS}}'
+      cmd_ps: '--debug'         # Print rendered templates, etc.
+      custom_value_files:
+        - ${{CHART_NAME}}/values.yaml           # Specifies image, etc.
+        - ${{CHART_NAME}}/${{ENV_HELM_VALUES}}  # Environment-specific values, ex: values-prod.yaml
+      custom_values:
+        - 'buildID=${{CF_BUILD_ID}}'
+
+  test_helm_release:
+    title: Running Helm release tests
+    stage: test
+    image: 'codefresh/kube-helm:${{HELM_VER}}'
+    commands:
+      - echo Changing to context "$DEPLOY_KUBE_CTX" and ns "$DEPLOY_KUBE_NS"
+      - kubectl config use-context $DEPLOY_KUBE_CTX
+      - kubectl config set-context --current --namespace=$DEPLOY_KUBE_NS
+      - echo Testing Helm Release "$CHART_RELEASE"
+      - helm test $CHART_RELEASE
+
+  look_up_service:
+    title: Lookup the hostname of the service
+    stage: monitor
+    image: codefresh/kubectl
+    commands:
+      - "cf_export SVC_HOSTNAME=$(kubectl get svc ${{ENV_DASHBOARD_SVC}} -o jsonpath='{ $.status.loadBalancer.ingress[0].hostname }')"
+
+  update_deployment_environment:
+    title: Update the Environment dashboard
+    stage: monitor
+    image: codefresh/kubectl
+    commands:
+      - echo Endpoint to publish is http://$SVC_HOSTNAME
+    env:
+      name: '${{ENV_DASHBOARD_NAME}}'
+      endpoints:
+      - name: '${{ENV_DASHBOARD_SVC}}'
+        url: 'http://${{SVC_HOSTNAME}}'
+      type: helm-release
+      # type: kubernetes
+      change: '${{CF_COMMIT_MESSAGE}}'
+      filters:
+      - cluster: '${{DEPLOY_KUBE_CTX}}'
+        releaseName: '${{CHART_RELEASE}}'
+        # namespace: '${{DEPLOY_KUBE_NS}}' # Use with type: kubernetes
