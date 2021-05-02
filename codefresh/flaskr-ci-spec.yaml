@@ -19,7 +19,7 @@ spec:
       branchRegex: /main/gi
       branchRegexInput: regex
       provider: github
-      # disabled: false  # don't override current state
+      disabled: false  # default if unspecified is false
       options:
         noCache: false
         noCfCache: false
@@ -41,7 +41,7 @@ spec:
       value: ecr
       encrypted: false
     - key: RESIGTRY_FQDN
-      value: 336151728602.dkr.ecr.us-west-2.amazonaws.com
+      value: 336151728602.dkr.ecr.us-east-1.amazonaws.com
       encrypted: false
     - key: GIT_PROVIDER_NAME
       value: github-ted

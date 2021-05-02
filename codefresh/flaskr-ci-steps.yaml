@@ -111,6 +111,13 @@ steps:
               - CF_QUALITY: false
 
   # When updating a repo, you should clean the directory of dirty files from past builds
+  get_committer_email:
+    title: Get email of committer
+    stage: update helm
+    image: alpine/git:latest
+    commands:
+      - cf_export COMMIT_AUTHOR_EMAIL=$(git show -s --format='%ae' ${{CF_SHORT_REVISION}})
+
   pre_clean:
     title: Pre-clean the clone directory
     stage: update helm
@@ -146,6 +153,6 @@ steps:
       working_directory: '${{CF_VOLUME_PATH}}/${{DEPLOY_REPO_NAME}}'
       git: ${{GIT_PROVIDER_NAME}}
       commit_message: "Update image ${{IMAGE_NAME}}:${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}"
-      git_user_name: codefresh
-      git_user_email: codefresh
+      git_user_name: '${{CF_COMMIT_AUTHOR}'
+      git_user_email: '${{COMMIT_AUTHOR_EMAIL}}'
       allow_empty: false
