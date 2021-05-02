@@ -32,12 +32,6 @@ spec:
           value: argocd
         - key: ARGOCD_APP_NAME
           value: flaskr-prod
-        - key: TEST_KUBE_CTX
-          value: salesdemo-eks
-        - key: TEST_KUBE_NS
-          value: flaskr-prod
-        - key: TEST_RELEASE
-          value: flaskr-prod
     - name: DeployToQA
       type: git
       repo: codefresh-contrib/salesdemo-flaskr-deploy
@@ -60,12 +54,6 @@ spec:
         - key: ARGOCD_AGENT
           value: argocd
         - key: ARGOCD_APP_NAME
-          value: flaskr-qa
-        - key: TEST_KUBE_CTX
-          value: salesdemo-eks
-        - key: TEST_KUBE_NS
-          value: flaskr-qa
-        - key: TEST_RELEASE
           value: flaskr-qa
     - name: DeployToTest
       type: git
@@ -90,16 +78,9 @@ spec:
           value: flaskr-test
         - key: ARGOCD_AGENT
           value: argocd
-        - key: TEST_KUBE_CTX
-          value: salesdemo-eks
-        - key: TEST_KUBE_NS
-          value: flaskr-test
-        - key: TEST_RELEASE
-          value: flaskr-test
-  variables:
-    - key: SLACK_HOOK_URL
-      value: "https://hooks.slack.com/services/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"
-  contexts: []
+  variables: []
+  contexts:
+    - 'Slack - #demo channel'
   runtimeEnvironment:
     name: salesdemo-eks
     cpu: 1000m

@@ -27,17 +27,6 @@ steps:
       additional_flags:
         - '--grpc-web'  # Needed when Argo CD runs behind a svc
 
-  test_helm_release:
-    title: Running Helm release tests
-    stage: test
-    image: 'codefresh/kube-helm:3.3.1'
-    commands:
-      - echo Changing to context "$TEST_KUBE_CTX" and ns "$TEST_KUBE_NS"
-      - kubectl config use-context $TEST_KUBE_CTX
-      - kubectl config set-context --current --namespace=$TEST_KUBE_NS
-      - echo Testing Helm Release "$TEST_RELEASE"
-      - helm test $TEST_RELEASE
-
   notify_slack_finished:
     title: Post-sync Slack notification
     stage: test
