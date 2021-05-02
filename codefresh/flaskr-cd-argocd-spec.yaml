@@ -32,6 +32,12 @@ spec:
           value: sa-eks-argocd
         - key: ARGOCD_APP_NAME
           value: flaskr-prod
+        - key: TEST_KUBE_CTX
+          value: salesdemo-eks
+        - key: TEST_KUBE_NS
+          value: flaskr-prod
+        - key: TEST_RELEASE
+          value: flaskr-prod
     - name: DeployToQA
       type: git
       repo: codefresh-contrib/salesdemo-flaskr-deploy
@@ -55,6 +61,12 @@ spec:
           value: sa-eks-argocd
         - key: ARGOCD_APP_NAME
           value: flaskr-test
+        - key: TEST_KUBE_CTX
+          value: salesdemo-eks
+        - key: TEST_KUBE_NS
+          value: flaskr-qa
+        - key: TEST_RELEASE
+          value: flaskr-qa
     - name: DeployToTest
       type: git
       repo: codefresh-contrib/salesdemo-flaskr-deploy
@@ -78,6 +90,12 @@ spec:
           value: flaskr-test
         - key: ARGOCD_AGENT
           value: sa-eks-argocd
+        - key: TEST_KUBE_CTX
+          value: salesdemo-eks
+        - key: TEST_KUBE_NS
+          value: flaskr-test
+        - key: TEST_RELEASE
+          value: flaskr-test
   variables:
     - key: ARGOCD_APP_NAME
       value: flaskr-test

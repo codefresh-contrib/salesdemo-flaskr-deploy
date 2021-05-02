@@ -1,9 +1,19 @@
 version: "1.0"
 stages:
+  - "prep"
   - "sync"
   - "test"
 
 steps:
+
+  notify_slack_start:
+    title: Pre-sync Slack notification
+    stage: prep
+    type: slack-notifier
+    arguments:
+      SLACK_HOOK_URL: '${{SLACK_WEBHOOK_URL}}'
+      SLACK_TEXT: 'Starting sync of Argo CD app: ${{ARGOCD_APP_NAME}}'
+      # SLACK_ATTACHMENTS: '${{SLACK_ATTACHMENTS}}'
 
   sync_and_wait:
     title: Sync ArgoCD app and wait
@@ -16,3 +26,23 @@ steps:
       debug: true
       additional_flags:
         - '--grpc-web'  # Needed when Argo CD runs behind a svc
+
+  test_helm_release:
+    title: Running Helm release tests
+    stage: test
+    image: 'codefresh/kube-helm:3.3.1'
+    commands:
+      - echo Changing to context "$TEST_KUBE_CTX" and ns "$TEST_KUBE_NS"
+      - kubectl config use-context $TEST_KUBE_CTX
+      - kubectl config set-context --current --namespace=$TEST_KUBE_NS
+      - echo Testing Helm Release "$TEST_RELEASE"
+      - helm test $TEST_RELEASE
+
+  notify_slack_finished:
+    title: Post-sync Slack notification
+    stage: prep
+    type: slack-notifier
+    arguments:
+      SLACK_HOOK_URL: '${{SLACK_WEBHOOK_URL}}'
+      SLACK_TEXT: 'Finished sync of Argo CD app: ${{ARGOCD_APP_NAME}}'
+      # SLACK_ATTACHMENTS: '${{SLACK_ATTACHMENTS}}'
