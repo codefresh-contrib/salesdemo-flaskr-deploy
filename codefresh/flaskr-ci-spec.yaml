@@ -58,7 +58,9 @@ spec:
     - key: CHART_NAME
       value: flaskr
       encrypted: false
-  contexts: []
+  contexts:
+    - "Jira"
+    - "Jira creds"
   runtimeEnvironment:
     name: salesdemo-eks
     cpu: 2000m

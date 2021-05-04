@@ -60,7 +60,7 @@ steps:
   check_for_test_failures:
     title: Check test results for failures
     stage: test
-    image: alpine
+    image: alpine/git:latest
     commands:
       - 'echo Result of Linting was: ${{steps.linting.result}}'
       - 'echo Result of Unit Testing was: ${{steps.unit_tests.result}}'
@@ -84,22 +84,22 @@ steps:
     image_name: '${{IMAGE_NAME}}'
     registry: '${{REGISTRY_NAME}}'
 
-  prep_for_enrich_image:
-    title: Gather image info
+  get_image_name:
+    title: Get image info
     stage: push
-    image: alpine
+    image: alpine/git:latest
     commands:
       - echo "${{steps.push_docker_image.imageId}}"
-      - export IMAGE=${{steps.push_docker_image.imageId}}
-      - cf_export IMAGE
-      - echo $IMAGE
+      - export IMAGE_ID=${{steps.push_docker_image.imageId}}
+      - cf_export IMAGE_ID
+      - echo $IMAGE_ID  # Should be full image path
 
-  enrich_image:
-    title: Enrich image with PR annotations
+  enrich_image_with_pr:
+    title: Enrich image with PR
     stage: push
     type: image-enricher
     arguments:
-      IMAGE: '${{IMAGE}}'
+      IMAGE: '${{IMAGE_ID}}'
       BRANCH: '${{CF_BRANCH}}'
       REPO: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
       GIT_PROVIDER_NAME: '${{GIT_PROVIDER_NAME}}'  # defined as a trigger variable
@@ -109,6 +109,21 @@ steps:
           set:
             - '${{steps.push_docker_image.imageId}}':
               - CF_QUALITY: false
+
+  enrich_image_with_jira:
+    # Search branch name for Jira ticket(s) and verifies they exist in Jira
+    # Example ticket for demo: SAAS-8431
+    title: Enrich image with jira issues
+    type: jira-issue-extractor
+    stage: push
+    fail_fast: false
+    arguments:
+      IMAGE: '${{IMAGE_ID}}'
+      JIRA_PROJECT_PREFIX: 'SAAS'  # Or make a step that infers this prefix from the branch
+      MESSAGE: '${{CF_BRANCH}}'  # Options: branch name, GitHub PR message, commit message
+      JIRA_HOST: '${{JIRA_HOST}}'
+      JIRA_EMAIL: '${{JIRA_TOKEN_EMAIL}}'
+      JIRA_API_TOKEN: '${{JIRA_TOKEN}}'
 
   # When updating a repo, you should clean the directory of dirty files from past builds
   pre_clean:
