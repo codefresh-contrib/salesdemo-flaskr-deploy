@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   pullPolicy: IfNotPresent
   repository: 336151728602.dkr.ecr.us-east-1.amazonaws.com/flaskr
-  tag: 8c6546c
+  tag: SAAS-8431-7062812
 service:
   name: flaskr
   type: LoadBalancer
