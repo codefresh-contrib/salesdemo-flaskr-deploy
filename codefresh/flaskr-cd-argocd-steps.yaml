@@ -25,7 +25,8 @@ steps:
       wait_healthy: true
       debug: true
       additional_flags:
-        - '--grpc-web'  # Needed when Argo CD runs behind a svc
+        - '--grpc-web'  # Seems to always be needed, regardless of Argo CD using LB svc or Ingress
+        # - --loglevel debug. # Probably best to comment this out when not debugging
 
   notify_slack_finished:
     title: Post-sync Slack notification
