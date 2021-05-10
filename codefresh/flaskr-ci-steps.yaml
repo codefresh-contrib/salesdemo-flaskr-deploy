@@ -119,7 +119,7 @@ steps:
     fail_fast: false
     arguments:
       IMAGE: '${{IMAGE_ID}}'
-      JIRA_PROJECT_PREFIX: 'SAAS'  # Or make a step that infers this prefix from the branch
+      JIRA_PROJECT_PREFIX: 'SA'  # Or make a step that infers this prefix from the branch
       MESSAGE: '${{CF_BRANCH}}'  # Options: branch name, GitHub PR message, commit message
       JIRA_HOST: '${{JIRA_HOST}}'
       JIRA_EMAIL: '${{JIRA_TOKEN_EMAIL}}'
