@@ -155,7 +155,7 @@ steps:
   get_committer_email:
     title: Get original committer email
     stage: update helm
-    working_directory: "${{clone_deploy_repo}}"
+    working_directory: "${{main_clone}}"
     image: alpine/git:latest
     commands:
       - cf_export COMMIT_AUTHOR_EMAIL=$(git show -s --format='%ae' ${{CF_SHORT_REVISION}})
