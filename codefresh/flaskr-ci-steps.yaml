@@ -2,7 +2,7 @@ version: '1.0'
 stages:
   - build
   - test
-  - push
+  - push image
   - update helm
 
 steps:
@@ -77,7 +77,7 @@ steps:
 
   push_docker_image:
     title: Push image to Docker Registry
-    stage: push
+    stage: push image
     type: push
     tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
     candidate: '${{build_docker_image}}'
@@ -86,7 +86,7 @@ steps:
 
   get_image_name:
     title: Get image info
-    stage: push
+    stage: push image
     image: alpine/git:latest
     commands:
       - echo "${{steps.push_docker_image.imageId}}"
@@ -96,7 +96,7 @@ steps:
 
   enrich_image_with_pr:
     title: Enrich image with PR
-    stage: push
+    stage: push image
     type: image-enricher
     arguments:
       IMAGE: '${{IMAGE_ID}}'
@@ -115,7 +115,7 @@ steps:
     # Example ticket for demo: SAAS-8431
     title: Enrich image with jira issues
     type: jira-issue-extractor
-    stage: push
+    stage: push image
     fail_fast: false
     arguments:
       IMAGE: '${{IMAGE_ID}}'
@@ -168,6 +168,6 @@ steps:
       working_directory: '${{CF_VOLUME_PATH}}/${{DEPLOY_REPO_NAME}}'
       git: ${{GIT_PROVIDER_NAME}}
       commit_message: "Update image ${{IMAGE_NAME}}:${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}"
-      git_user_name: '${{CF_COMMIT_AUTHOR}'
+      git_user_name: '${{CF_COMMIT_AUTHOR}}'
       git_user_email: '${{COMMIT_AUTHOR_EMAIL}}'
       allow_empty: false
