@@ -1,0 +1,91 @@
+version: "1.0"
+stages:
+  - "clone"
+  - "change"
+  - "push"
+
+steps:
+
+  pre_clean:
+    title: Pre-clean the clone directory
+    stage: clone
+    image: alpine/git:latest
+    commands:
+      - rm -rf ${{CF_VOLUME_PATH}}/${{CF_REPO_NAME}}
+
+  main_clone:
+    title: Clone repository
+    stage: clone
+    type: git-clone
+    git: '${{GIT_PROVIDER_NAME}}'
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{TARGET_BRANCH}}'
+
+  generate_change_details:
+    title: Generate change vars, create branch
+    stage: change
+    image: ubuntu:20.04
+    working_directory: "${{main_clone}}"
+    shell: bash  # the script is not compatible with /bin/sh
+    commands:
+      - "./generate-change-vars.sh 1 3"  # skip approx 1 out of every 3
+  # Output vars:
+  #   SKIP_THIS_TIME = true or false
+  #   COLOR_CHOICE = a randomized color to include in the code change/commit
+  #   JIRA_ISSUE = a randomized JIRA issue number (starts with SA-)
+  #   COMMIT_MESSAGE = a randomized commit message
+  #   COMMITTER_NAME = a randomized committer name
+  #   COMMITTER_EMAIL = the corresponding committer email
+
+  make_change_express:
+    title: Create change for express-microservice app
+    stage: change
+    image: alpine/git:latest
+    working_directory: "${{main_clone}}"
+    commands:
+      - git config --global user.name ${COMMITTER_NAME}
+      - git config --global user.email ${COMMITTER_EMAIL}
+      - export PR_BRANCH_NAME=autobot/${{JIRA_ISSUE}}
+      - cf_export PR_BRANCH_NAME
+      - git checkout -b "${PR_BRANCH_NAME}"
+      - echo $COLOR_CHOICE
+      - cp $CHANGEFILE_SOURCE $CHANGEFILE_DEST
+      - sed -i s/REPLACEME/${{COLOR_CHOICE}}/g $CHANGEFILE_DEST
+    when:
+      condition:
+        all:
+          notSkippingThisTime: '"${{SKIP_THIS_TIME}}" == "false"'
+
+  commit_and_push:
+    title: Commit changes and push
+    stage: push
+    type: git-commit
+    arguments:
+      repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+      working_directory: '${{CF_VOLUME_PATH}}/${{CF_REPO_NAME}}'
+      git: '${{GIT_PROVIDER_NAME}}'
+      commit_message: '${{JIRA_ISSUE}} ${{COMMIT_MESSAGE}}'
+      git_user_name: '${{COMMITTER_NAME}}'
+      git_user_email: '${{COMMITTER_EMAIL}}'
+      allow_empty: true  # In case the same random color was in the prev commit
+    when:
+      condition:
+        all:
+          notSkippingThisTime: '"${{SKIP_THIS_TIME}}" == "false"'
+
+  github-pr:
+    title: Create PR
+    stage: push
+    type: github-pr
+    arguments:
+      GITHUB_TOKEN: '${{GITHUB_TOKEN}}'
+      GITHUB_REPO_OWNER: '${{CF_REPO_OWNER}}'
+      GITHUB_REPO_NAME: '${{CF_REPO_NAME}}'
+      HEAD: '${{PR_BRANCH_NAME}}'         # PR source branch
+      BASE: '${{TARGET_BRANCH}}'          # PR target branch
+      TITLE: '${{COMMIT_MESSAGE}}'
+      # GITHUB_PR_OPERATION: merge
+    when:
+      condition:
+        all:
+          notSkippingThisTime: '"${{SKIP_THIS_TIME}}" == "false"'
