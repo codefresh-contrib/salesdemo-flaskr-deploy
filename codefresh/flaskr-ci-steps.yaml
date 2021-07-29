@@ -2,7 +2,7 @@ version: '1.0'
 stages:
   - build
   - test
-  - push
+  - push image
   - update helm
 
 steps:
@@ -60,7 +60,7 @@ steps:
   check_for_test_failures:
     title: Check test results for failures
     stage: test
-    image: alpine
+    image: alpine/git:latest
     commands:
       - 'echo Result of Linting was: ${{steps.linting.result}}'
       - 'echo Result of Unit Testing was: ${{steps.unit_tests.result}}'
@@ -77,29 +77,29 @@ steps:
 
   push_docker_image:
     title: Push image to Docker Registry
-    stage: push
+    stage: push image
     type: push
     tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
     candidate: '${{build_docker_image}}'
     image_name: '${{IMAGE_NAME}}'
     registry: '${{REGISTRY_NAME}}'
 
-  prep_for_enrich_image:
-    title: Gather image info
-    stage: push
-    image: alpine
+  get_image_name:
+    title: Get image info
+    stage: push image
+    image: alpine/git:latest
     commands:
       - echo "${{steps.push_docker_image.imageId}}"
-      - export IMAGE=${{steps.push_docker_image.imageId}}
-      - cf_export IMAGE
-      - echo $IMAGE
+      - export IMAGE_ID=${{steps.push_docker_image.imageId}}
+      - cf_export IMAGE_ID
+      - echo $IMAGE_ID  # Should be full image path
 
-  enrich_image:
-    title: Enrich image with PR annotations
-    stage: push
+  enrich_image_with_pr:
+    title: Enrich image with PR
+    stage: push image
     type: image-enricher
     arguments:
-      IMAGE: '${{IMAGE}}'
+      IMAGE: '${{IMAGE_ID}}'
       BRANCH: '${{CF_BRANCH}}'
       REPO: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
       GIT_PROVIDER_NAME: '${{GIT_PROVIDER_NAME}}'  # defined as a trigger variable
@@ -110,14 +110,22 @@ steps:
             - '${{steps.push_docker_image.imageId}}':
               - CF_QUALITY: false
 
-  # When updating a repo, you should clean the directory of dirty files from past builds
-  get_committer_email:
-    title: Get email of committer
-    stage: update helm
-    image: alpine/git:latest
-    commands:
-      - cf_export COMMIT_AUTHOR_EMAIL=$(git show -s --format='%ae' ${{CF_SHORT_REVISION}})
+  enrich_image_with_jira:
+    # Search branch name for Jira ticket(s) and verifies they exist in Jira
+    # Example ticket for demo: SAAS-8431
+    title: Enrich image with jira issues
+    type: jira-issue-extractor
+    stage: push image
+    fail_fast: false
+    arguments:
+      IMAGE: '${{IMAGE_ID}}'
+      JIRA_PROJECT_PREFIX: 'SA'  # Or make a step that infers this prefix from the branch
+      MESSAGE: '${{CF_BRANCH}}'  # Options: branch name, GitHub PR message, commit message
+      JIRA_HOST: '${{JIRA_HOST}}'
+      JIRA_EMAIL: '${{JIRA_TOKEN_EMAIL}}'
+      JIRA_API_TOKEN: '${{JIRA_TOKEN}}'
 
+  # When updating a repo, you should clean the directory of dirty files from past builds
   pre_clean:
     title: Pre-clean the clone directory
     stage: update helm
@@ -144,6 +152,14 @@ steps:
       - yq e '.image.tag = "${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}"' -i values.yaml
       - yq e '.appVersion = "${{CF_SHORT_REVISION}}"' -i Chart.yaml
 
+  get_committer_email:
+    title: Get original committer email
+    stage: update helm
+    working_directory: "${{main_clone}}"
+    image: alpine/git:latest
+    commands:
+      - cf_export COMMIT_AUTHOR_EMAIL=$(git show -s --format='%ae' ${{CF_SHORT_REVISION}})
+
   commit_and_push:
     title: Commit changes and push
     stage: update helm
@@ -153,6 +169,6 @@ steps:
       working_directory: '${{CF_VOLUME_PATH}}/${{DEPLOY_REPO_NAME}}'
       git: ${{GIT_PROVIDER_NAME}}
       commit_message: "Update image ${{IMAGE_NAME}}:${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}"
-      git_user_name: '${{CF_COMMIT_AUTHOR}'
+      git_user_name: '${{CF_COMMIT_AUTHOR}}'
       git_user_email: '${{COMMIT_AUTHOR_EMAIL}}'
       allow_empty: false

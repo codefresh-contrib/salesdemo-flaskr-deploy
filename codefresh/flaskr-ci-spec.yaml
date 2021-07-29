@@ -13,13 +13,14 @@ spec:
       type: git
       repo: codefresh-contrib/salesdemo-flaskr
       events:
-        - push.heads
+        - pullrequest.merged
       pullRequestAllowForkEvents: false
       commentRegex: /.*/gi
-      branchRegex: /main/gi
+      branchRegex: /.*/gi
       branchRegexInput: regex
+      pullRequestTargetBranchRegex: /main/gi
       provider: github
-      disabled: false  # default if unspecified is false
+      disabled: false
       options:
         noCache: false
         noCfCache: false
@@ -58,7 +59,9 @@ spec:
     - key: CHART_NAME
       value: flaskr
       encrypted: false
-  contexts: []
+  contexts:
+    - "Jira"
+    - "Jira creds"
   runtimeEnvironment:
     name: salesdemo-eks
     cpu: 2000m

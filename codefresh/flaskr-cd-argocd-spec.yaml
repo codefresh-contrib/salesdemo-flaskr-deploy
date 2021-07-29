@@ -29,7 +29,7 @@ spec:
       contexts: []
       variables:
         - key: ARGOCD_AGENT
-          value: sa-eks-argocd
+          value: argocd
         - key: ARGOCD_APP_NAME
           value: flaskr-prod
     - name: DeployToQA
@@ -52,9 +52,9 @@ spec:
       contexts: []
       variables:
         - key: ARGOCD_AGENT
-          value: sa-eks-argocd
+          value: argocd
         - key: ARGOCD_APP_NAME
-          value: flaskr-test
+          value: flaskr-qa
     - name: DeployToTest
       type: git
       repo: codefresh-contrib/salesdemo-flaskr-deploy
@@ -77,15 +77,10 @@ spec:
         - key: ARGOCD_APP_NAME
           value: flaskr-test
         - key: ARGOCD_AGENT
-          value: sa-eks-argocd
-  variables:
-    - key: ARGOCD_APP_NAME
-      value: flaskr-test
-      encrypted: false
-    - key: ARGOCD_AGENT
-      value: sa-eks-argocd
-      encrypted: false
-  contexts: []
+          value: argocd
+  variables: []
+  contexts:
+    - 'Slack - #demo channel'
   runtimeEnvironment:
     name: salesdemo-eks
     cpu: 1000m
