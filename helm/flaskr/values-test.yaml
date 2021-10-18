@@ -1,6 +1,6 @@
 # Values for deploying to the Test environment
 # Increased resource limits compared to default values.yaml 
-replicaCount: 1
+replicaCount: 2
 resources:
   limits:
     cpu: 200m
