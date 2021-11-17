@@ -2,4 +2,4 @@ apiVersion: v1
 description: A Helm chart for Kubernetes
 name: flaskr
 version: 0.0.2
-appVersion: "bd37a63"
+appVersion: "21f59c6"
